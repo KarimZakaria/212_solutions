@@ -128,7 +128,7 @@ class EmployeeController extends Controller
         if ($request->hasFile('image')) {
             Storage::disk('uploads')->delete('/' . $old_name);
             $new_image_name = $data['image']->hashName();
-            Image::make($data['image'])->resize(400, 300)->save(storage_path('/' . $new_image_name));
+            Image::make($data['image'])->resize(400, 300)->save(public_path('/' . $new_image_name));
             $data['image'] = $new_image_name;
         } else {
             $data['image'] = $old_name;
