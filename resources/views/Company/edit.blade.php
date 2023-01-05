@@ -38,6 +38,9 @@
                         <label for="adress"><strong> Company Logo : </strong></label>
                         <input type="file" name="logo" class="form-control" placeholder="Enter Compnay Logo ">
                     </div>
+                    <div class="mt-2">
+                        <img src="{{ asset('/' . $company->logo) }}" width="100px" height="100px" alt="">
+                    </div>
                     <button type="submit" class="btn btn-success mt-2 "> Update Company </button>
                 </form>
             </div>

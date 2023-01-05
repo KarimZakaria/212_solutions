@@ -89,7 +89,10 @@ class EmployeeController extends Controller
         // Save image into Storage using Image Intervention Package
         Image::make($data['image'])->resize(400, 300)->save(public_path('/' . $new_image_name));
         $data['image'] = $new_image_name;
+
+        // Send Mail Depend on Event
         Mail::to($data['email'])->send(new WelcomeEmail($data['email']));
+
         Employee::create($data);
         return redirect()->route('employees.index')->with('success', 'Employee created successfully');
     }
@@ -102,8 +105,8 @@ class EmployeeController extends Controller
      */
     public function edit($id)
     {
-        $data['employee'] = Employee::findOrFail($id);
-        $data['companies'] = Company::all();
+        $data['employee'] = Employee::with('company')->findOrFail($id);
+        $data['companies'] = Company::select('id', 'name')->get();
         return view('Employee.edit')->with($data);
     }
 
@@ -119,12 +122,22 @@ class EmployeeController extends Controller
         $data = $request->validate([
             'name' => 'required|max:50|min:5',
             'email' => 'required|max:100',
-            'password' => 'required',
+            'password' => 'nullable',
             'company_id' => 'required',
             'image' => 'nullable|mimes:jpg,jpeg,png'
         ]);
 
-        $old_name = Employee::findOrFail($request->id)->image;
+        // update password depend on new request or let it with the old value
+        $old_password = Employee::findOrFail($id)->password;
+        if ($request->has('password')) {
+            $new_password = $request->password;
+            $data['password'] = Hash::make($new_password);
+        } else {
+            $data['password'] = $old_password;
+        }
+
+        // update password depend on new request or let it with the old value
+        $old_name = Employee::findOrFail($id)->image;
         if ($request->hasFile('image')) {
             Storage::disk('uploads')->delete('/' . $old_name);
             $new_image_name = $data['image']->hashName();
@@ -133,6 +146,7 @@ class EmployeeController extends Controller
         } else {
             $data['image'] = $old_name;
         }
+
         Employee::findOrFail($id)->update($data);
         return redirect()->route('employees.index')->with('success', 'Employee Updated successfully');
     }
@@ -147,14 +161,5 @@ class EmployeeController extends Controller
     {
         Employee::findOrFail($id)->delete();
         return redirect()->route('employees.index')->with('success', 'Employee Deleted successfully');
-    }
-
-    public function ship(Request $request, $id)
-    {
-        $employee = Employee::findOrFail($id);
-
-        // Ship order...
-
-        Mail::to($employee)->send(new WelcomeEmail($employee));
     }
 }

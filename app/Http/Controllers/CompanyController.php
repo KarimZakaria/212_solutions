@@ -100,14 +100,14 @@ class CompanyController extends Controller
             'logo' => 'nullable|mimes:jpg,jpeg,png'
         ]);
 
-        $old_name = Company::findOrFail($request->id)->image;
-        if ($request->hasFile('image')) {
+        $old_name = Company::findOrFail($id)->logo;
+        if ($request->hasFile('logo')) {
             Storage::disk('uploads')->delete('/' . $old_name);
-            $new_image_name = $data['image']->hashName();
-            Image::make($data['image'])->resize(400, 300)->save(storage_path('/' . $new_image_name));
-            $data['image'] = $new_image_name;
+            $new_image_name = $data['logo']->hashName();
+            Image::make($data['logo'])->resize(400, 300)->save(public_path('/' . $new_image_name));
+            $data['logo'] = $new_image_name;
         } else {
-            $data['image'] = $old_name;
+            $data['logo'] = $old_name;
         }
 
         Company::findOrFail($id)->update($data);
